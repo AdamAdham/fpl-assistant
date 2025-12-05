@@ -77,7 +77,7 @@ def extract_entities(user_query: str) -> Dict[str, List[str]]:
     # ------------------
     all_teams = fetch_all_names_from_db("Team", "name")
     # TODO team abbreviations
-    # fuzz for typos
+    # TODO fuzz for typos
     for team in all_teams:
         if team.lower() in query_lower:
             entities["teams"].append(team)

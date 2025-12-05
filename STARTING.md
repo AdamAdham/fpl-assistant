@@ -21,7 +21,7 @@ Run the following commands from the project root on VS code terminal:
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 

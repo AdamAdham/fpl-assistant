@@ -34,7 +34,7 @@ This README documents the repo layout, how to set up the project locally (Window
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\venv\Scripts\Activate.ps1
 pip install --upgrade pip
 ```
 

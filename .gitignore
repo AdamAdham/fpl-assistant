@@ -4,3 +4,5 @@ venv/
 __pycache__/
 
 embeddings_out/*
+
+scripts/config.txt
