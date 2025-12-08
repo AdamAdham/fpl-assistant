@@ -30,24 +30,73 @@ from modules.llm_engine import (
     llama_generate_answer,
 )
 
-st.set_page_config(page_title="Cole you later", layout="wide")
 
-st.title("FPL Graph-RAG — Assistant")
+st.set_page_config(page_title="FPL Assistant", layout="wide")
+
+# Inject custom CSS for sidebar color
+# Inject custom CSS for sidebar color
+st.markdown(
+    """
+    <style>
+    /* 1. Set the Sidebar Background */
+    [data-testid="stSidebar"] {
+        background-color: rgb(56, 0, 60) !important;
+    }
+
+    /* 2. Set global sidebar text to white/bold (default state) */
+    [data-testid="stSidebar"] * {
+        color: white !important;
+        font-weight: bold !important;
+    }
+
+    /* 3. FIX: Target the Selected Value inside the Selectbox */
+    /* We use data-baseweb="select" to find the box, then target the text div inside */
+    [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] div {
+        color: black !important;
+        font-weight: normal !important;
+    }
+
+    /* 4. Target the Dropdown Options (the list that appears when clicked) */
+    div[role="listbox"] div {
+        color: black !important;
+        font-weight: normal !important;
+    }
+
+    /* 5. Fix Text in Input/Textarea boxes */
+    [data-testid="stSidebar"] input, [data-testid="stSidebar"] textarea {
+        color: black !important;
+        font-weight: normal !important;
+    }
+    /* 6. Style st.chat_input textarea background to cyan, text to black */
+    [data-testid="stChatInput"] textarea {
+        background-color: rgb(0, 255, 133) !important;
+        color: black !important;
+        border-color: rgb(4, 245, 255) !important;
+    }
+    /* 7. Style st.chat_input send button */
+    [data-testid="stChatInput"] button {
+        background-color: rgb(0, 255, 133) !important;
+        color: black !important;
+        border: none !important;
+        font-weight: bold !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.title("FPL Graph-RAG Assistant")
 st.markdown(
     "Ask questions about Fantasy Premier League (player stats, fixture lookups, comparisons, transfer recs)."
 )
 
 # Sidebar controls
 with st.sidebar:
+    st.image("logo.png", use_column_width=True)
     st.header("Configuration")
 
     llm_key_choice = st.selectbox("Choose LLM", list(MODEL_OPTIONS.keys()), index=0)
     llm_model_choice = MODEL_OPTIONS[llm_key_choice]
-
-    embedding_key_choice = st.selectbox(
-        "Choose embedding model", list(EMBEDDING_MODEL_OPTIONS.keys()), index=0
-    )
-    embedding_model_choice = EMBEDDING_MODEL_OPTIONS[embedding_key_choice]
 
     RETRIEVAL_OPTIONS = ["Baseline (Cypher)", "Embeddings (Vector)", "Hybrid"]
 
@@ -56,6 +105,15 @@ with st.sidebar:
         RETRIEVAL_OPTIONS,
         index=RETRIEVAL_OPTIONS.index(DEFAULT_RETRIEVAL_MODE),
     )
+
+    if retrieval_mode in ["Embeddings (Vector)", "Hybrid"]:
+        embedding_key_choice = st.selectbox(
+            "Choose embedding model", list(EMBEDDING_MODEL_OPTIONS.keys()), index=0
+        )
+        embedding_model_choice = EMBEDDING_MODEL_OPTIONS[embedding_key_choice]
+    else:
+        embedding_key_choice = None
+        embedding_model_choice = None
 
     k = st.number_input(
         "Top-K results (for retrieval)", min_value=1, max_value=20, value=5

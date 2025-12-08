@@ -156,3 +156,15 @@ def __getattr__(name):
 3. In `modules/vector_retriever.py` move heavy loads (SentenceTransformer, faiss.read_index, mapping loads) into an `_ensure_initialized()` function called on first `vector_search` invocation.
 
 4. Make `cypher_retriever.retrieve_data_via_cypher` defensive when the provided `intent` is not present in `CYPHER_TEMPLATE_LIBRARY`. Use `CYPHER_TEMPLATE_LIBRARY.get(intent)` and return a helpful error payload rather than crashing.
+
+Premier league color pallette:
+
+Cyan: rgb(4, 245, 255)
+
+Pink: rgb(233, 0, 82)
+
+White: rgb(255, 255, 255)
+
+Green: rgb(0, 255, 133)
+
+Purple: rgb(56, 0, 60)

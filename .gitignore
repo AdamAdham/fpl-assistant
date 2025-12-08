@@ -7,3 +7,5 @@ __pycache__/
 embeddings_out/*
 
 scripts/config.txt
+
+old_template_library.py

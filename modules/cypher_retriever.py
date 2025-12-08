@@ -36,6 +36,16 @@ def safe_get(entity_dict, key, index=0):
     return entity_dict[key][index]
 
 
+def render_cypher_template(template: str, params: dict) -> str:
+    # Only replace keys that must be injected (not safe as Cypher params)
+    # e.g., stat_property, limit
+    # Use {stat_property} and {limit} in your template for these
+    for key in ["stat_property", "limit", "budget", "season"]:
+        if key in params and f"${key}" in template:
+            template = template.replace(f"${key}", str(params[key]))
+    return template
+
+
 # ---------------------------------------------------------
 # Main Retrieval Function
 # ---------------------------------------------------------
@@ -57,11 +67,9 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
     # Pick the template for this intent
     cypher = CYPHER_TEMPLATE_LIBRARY[intent]
 
-    player = safe_get(entities, "players", 0)
     player1 = safe_get(entities, "players", 0)
     player2 = safe_get(entities, "players", 1)
 
-    team = safe_get(entities, "teams", 0)
     team1 = safe_get(entities, "teams", 0)
     team2 = safe_get(entities, "teams", 1)
 
@@ -75,10 +83,8 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
     # Convert entities → parameters Neo4j expects
     params = {
         "limit": limit,
-        "player": player,
         "player1": player1,
         "player2": player2,
-        "team": team,
         "team1": team1,
         "team2": team2,
         "position": position,
@@ -103,6 +109,13 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
             "results": [],
             "error": f"Missing required parameters for template: {missing}",
         }
+
+    cypher = render_cypher_template(CYPHER_TEMPLATE_LIBRARY[intent], params)
+    # Remove stat_property/limit/budget/season from params before passing to Neo4j
+    params.pop("stat_property", None)
+    params.pop("limit", None)
+    params.pop("budget", None)
+    params.pop("season", None)
 
     raw_results = db.execute_query(cypher, params)
 
