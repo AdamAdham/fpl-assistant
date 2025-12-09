@@ -38,9 +38,9 @@ def safe_get(entity_dict, key, index=0):
 
 def render_cypher_template(template: str, params: dict) -> str:
     # Only replace keys that must be injected (not safe as Cypher params)
-    # e.g., stat_property, limit
-    # Use {stat_property} and {limit} in your template for these
-    for key in ["stat_property", "limit", "budget", "season"]:
+    # e.g., stat_property, limit, budget
+    # These cannot be parameterized in Cypher and must be string-replaced
+    for key in ["stat_property", "limit", "budget"]:
         if key in params and f"${key}" in template:
             template = template.replace(f"${key}", str(params[key]))
     return template
@@ -111,11 +111,11 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
         }
 
     cypher = render_cypher_template(CYPHER_TEMPLATE_LIBRARY[intent], params)
-    # Remove stat_property/limit/budget/season from params before passing to Neo4j
+    # Remove stat_property/limit/budget from params before passing to Neo4j
+    # These are injected into the template and should not be passed as parameters
     params.pop("stat_property", None)
     params.pop("limit", None)
     params.pop("budget", None)
-    params.pop("season", None)
 
     raw_results = db.execute_query(cypher, params)
 

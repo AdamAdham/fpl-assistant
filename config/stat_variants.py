@@ -3,13 +3,12 @@
 # Map possible stat variants to canonical form
 STAT_VARIANTS = {
     "assists": ["assist", "assists"],
-    "goals": ["goal", "goals", "scored"],
     "bonus": ["bonus", "bps"],  # bps also maps here
     "clean_sheets": ["clean sheet", "clean sheets", "cs"],
     "creativity": ["creativity"],
     "bps": ["bps", "bonus point system"],
     "goals_conceded": ["conceded", "goals conceded", "goals_allowed"],
-    "goals_scored": ["goals scored", "scored goals"],
+    "goals_scored": ["goals scored", "scored goals", "goal", "goals", "scored"],
     "ict_index": ["ict", "ict index"],
     "influence": ["influence"],
     "minutes": ["minutes", "mins", "played minutes"],

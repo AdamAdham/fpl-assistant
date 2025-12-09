@@ -52,7 +52,7 @@ st.markdown(
     /* 3. FIX: Target the Selected Value inside the Selectbox */
     /* We use data-baseweb="select" to find the box, then target the text div inside */
     [data-testid="stSidebar"] [data-testid="stSelectbox"] div[data-baseweb="select"] div {
-        color: black !important;
+        color: white !important;
         font-weight: normal !important;
     }
 
@@ -64,7 +64,7 @@ st.markdown(
 
     /* 5. Fix Text in Input/Textarea boxes */
     [data-testid="stSidebar"] input, [data-testid="stSidebar"] textarea {
-        color: black !important;
+        color: white !important;
         font-weight: normal !important;
     }
     /* 6. Style st.chat_input textarea background to cyan, text to black */
