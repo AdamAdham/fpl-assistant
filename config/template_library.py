@@ -23,46 +23,58 @@ CYPHER_TEMPLATE_LIBRARY = {
       RETURN p.player_name AS player,
          gw.season AS season,
          gw.GW_number AS gw,
-         r.*
+         r.total_points AS total_points,
+         r.goals_scored AS goals_scored,
+         r.assists AS assists,
+         r.clean_sheets AS clean_sheets,
+         r.minutes AS minutes,
+         r.bonus AS bonus,
+         r.yellow_cards AS yellow_cards,
+         r.red_cards AS red_cards,
+         r.saves AS saves,
+         r.goals_conceded AS goals_conceded
       """,
     # How do two players compare in total points?
     "COMPARE_PLAYERS_BY_TOTAL_POINTS": """
        MATCH (p1:Player {player_name: $player1})
        OPTIONAL MATCH (p1)-[r1:PLAYED_IN]->(:Fixture)
-       WITH p1, coalesce(sum(r1.total_points), 0) AS p1_pts
+       WITH $player1 AS player1_name, coalesce(sum(r1.total_points), 0) AS p1_pts
        MATCH (p2:Player {player_name: $player2})
        OPTIONAL MATCH (p2)-[r2:PLAYED_IN]->(:Fixture)
+       WITH player1_name, p1_pts, $player2 AS player2_name, coalesce(sum(r2.total_points), 0) AS p2_pts
        RETURN
-              p1.player_name AS player1,
+              player1_name AS player1,
               p1_pts AS player1_points,
-              p2.player_name AS player2,
-              coalesce(sum(r2.total_points), 0) AS player2_points
+              player2_name AS player2,
+              p2_pts AS player2_points
        """,
     # How do two players compare in a specific stat sum?
     "COMPARE_PLAYERS_BY_SPECIFIC_STAT_SUM": """
        MATCH (p1:Player {player_name: $player1})
        OPTIONAL MATCH (p1)-[r1:PLAYED_IN]->(:Fixture)
-       WITH p1, coalesce(sum(r1.$stat_property), 0) AS p1_sum_$stat_property
+       WITH $player1 AS player1_name, coalesce(sum(r1.$stat_property), 0) AS p1_sum_$stat_property
        MATCH (p2:Player {player_name: $player2})
        OPTIONAL MATCH (p2)-[r2:PLAYED_IN]->(:Fixture)
+       WITH player1_name, p1_sum_$stat_property, $player2 AS player2_name, coalesce(sum(r2.$stat_property), 0) AS p2_sum_$stat_property
        RETURN
-              p1.player_name AS player1,
+              player1_name AS player1,
               p1_sum_$stat_property AS player1_sum_$stat_property,
-              p2.player_name AS player2,
-              coalesce(sum(r2.$stat_property), 0) AS player2_sum_$stat_property
+              player2_name AS player2,
+              p2_sum_$stat_property AS player2_sum_$stat_property
        """,
     # How do two players compare in a specific stat average?
     "COMPARE_PLAYERS_BY_SPECIFIC_STAT_AVG": """
        MATCH (p1:Player {player_name: $player1})
        OPTIONAL MATCH (p1)-[r1:PLAYED_IN]->(:Fixture)
-       WITH p1, coalesce(avg(r1.$stat_property), 0) AS p1_avg_$stat_property
+       WITH $player1 AS player1_name, coalesce(avg(r1.$stat_property), 0) AS p1_avg_$stat_property
        MATCH (p2:Player {player_name: $player2})
        OPTIONAL MATCH (p2)-[r2:PLAYED_IN]->(:Fixture)
+       WITH player1_name, p1_avg_$stat_property, $player2 AS player2_name, coalesce(avg(r2.$stat_property), 0) AS p2_avg_$stat_property
        RETURN
-              p1.player_name AS player1,
+              player1_name AS player1,
               p1_avg_$stat_property AS player1_avg_$stat_property,
-              p2.player_name AS player2,
-              coalesce(avg(r2.$stat_property), 0) AS player2_avg_$stat_property
+              player2_name AS player2,
+              p2_avg_$stat_property AS player2_avg_$stat_property
        """,
     # What are the career stats totals for a player?
     "PLAYER_CAREER_STATS_TOTALS": """
