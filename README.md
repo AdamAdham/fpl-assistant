@@ -40,6 +40,16 @@ You can generate these using the `scripts/generate_embeddings.py` script. Genera
 streamlit run main.py
 ```
 
+7. Running quantitative experiments
+
+```powershell
+python -m experiments.run_experiments
+```
+
+36 test prompts
+18 permutations for each test prompt
+648 total test results
+
 ## High-level architecture
 
 - UI (`main.py`) receives a user query.

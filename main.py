@@ -23,12 +23,15 @@ from config.settings import (
     DEFAULT_RETRIEVAL_MODE,
 )
 from config.template_library import CYPHER_TEMPLATE_LIBRARY, local_intent_classify
-from modules.llm_helper import classify_with_deepseek
+from modules.llm_helper import classify_with_deepseek, create_query_with_deepseek
 from modules.llm_engine import (
     deepseek_generate_answer,
     gemma_generate_answer,
     llama_generate_answer,
 )
+
+# Import Neo4jGraph for direct Cypher execution
+from modules.db_manager import neo4j_graph
 from config.styles import STYLE
 
 
@@ -52,7 +55,12 @@ with st.sidebar:
     llm_key_choice = st.selectbox("Choose LLM", list(MODEL_OPTIONS.keys()), index=0)
     llm_model_choice = MODEL_OPTIONS[llm_key_choice]
 
-    RETRIEVAL_OPTIONS = ["Baseline (Cypher)", "Embeddings (Vector)", "Hybrid"]
+    RETRIEVAL_OPTIONS = [
+        "Baseline (Cypher)",
+        "Embeddings (Vector)",
+        "Hybrid",
+        "LLM-generated Cypher",
+    ]
 
     retrieval_mode = st.radio(
         "Retrieval Mode",
@@ -181,8 +189,7 @@ if user_input:
         ]
     else:
         if retrieval_mode == "Baseline (Cypher)":
-            # Use predefined cypher templates to retrieve data from prepopulated knowledge graph
-            # For each detected intent, run the corresponding cypher query
+            # ...existing code...
             cypher_results = []
             for intent in intents:
                 try:
@@ -206,8 +213,7 @@ if user_input:
             # Filter out entries with an 'error' field
             retrieved_context = [res for res in cypher_results if not res.get("error")]
         elif retrieval_mode == "Embeddings (Vector)":
-            # Use vector embeddings to retrieve relevant text snippets from corpus
-            # Single vector search for all nodes
+            # ...existing code...
             try:
                 retrieved_context = vector_retriever.vector_search(
                     entities, top_k=k, model_choice=embedding_model_choice
@@ -221,8 +227,8 @@ if user_input:
                 if show_debug:
                     st.write("Vector retrieval error:")
                     st.text(str(e))
-        else:  # Hybrid
-            # Combine cypher + vector retrieval
+        elif retrieval_mode == "Hybrid":
+            # ...existing code...
             cypher_contexts = []
             for intent in intents:
                 try:
@@ -250,6 +256,27 @@ if user_input:
                     st.text(str(e))
 
             retrieved_context = {"cypher": filtered_cypher_contexts, "vector": v_res}
+        elif retrieval_mode == "LLM-generated Cypher":
+            # New mode: Use LLM to generate Cypher, then execute it
+            try:
+                cypher_query = create_query_with_deepseek(user_input)
+                print("\n\n####### LLM-generated Cypher query: #######\n\n")
+                print(cypher_query)
+                # Optionally show the query in debug panel
+                cypher_results = neo4j_graph.execute_query(cypher_query)
+                print("\n\n####### LLM Cypher execution result: #######\n\n")
+                print(cypher_results)
+                retrieved_context = {
+                    "cypher_query": cypher_query,
+                    "results": cypher_results,
+                }
+            except Exception as e:
+                retrieved_context = {"error": str(e)}
+                print("\n\n####### LLM Cypher retrieval error: #######\n\n")
+                print(retrieved_context)
+                if show_debug:
+                    st.write("LLM Cypher retrieval error:")
+                    st.text(str(e))
 
     # LLM response
 

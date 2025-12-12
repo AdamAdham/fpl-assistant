@@ -120,3 +120,120 @@ def classify_with_deepseek(
                 mapped.append(token)
     # Limit to 3
     return mapped[:3]
+
+
+SCHEMA = """
+## Knowledge Graph (Neo4j) Schema:
+
+### Nodes:
+
+- Season: [season_name]
+- Gameweek: [season, GW_number]
+- Fixture: [season, fixture_number], kickoff_time
+- Team: [name]
+- Player: [player_name, player_element]
+- Position: [name]
+
+### Relationships:
+
+- (Season) - [:HAS_GW]-> (Gameweek)
+- (Gameweek) - [:HAS_FIXTURE]-> (Fixture)
+- (Fixture) - [:HAS_HOME_TEAM]-> (Team)
+- (Fixture) - [:HAS_AWAY_TEAM]-> (Team)
+- (Player) - [:PLAYS_AS]-> (Position)
+- (Player) - [:PLAYED_IN]-> (Fixture);
+
+#### Properties:
+
+minutes, goals_scored, assists, total_points, bonus, clean_sheets, goals_conceded, own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards, saves, bps, influence, creativity, threat, ict_index, form
+
+"""
+
+
+def create_query_with_deepseek(
+    query: str, api_key: Optional[str] = None, timeout: int = 10
+) -> str:
+    """
+    Call Deepseek chat to generate a Cypher query for the user's prompt, using the provided SCHEMA.
+    Returns the generated Cypher query as a string.
+
+    - Reads DEEPSEEK_API_KEY & DEEPSEEK_API_URL from environment if api_key is not provided.
+    """
+    api_key = api_key or os.getenv("DEEPSEEK_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "DEEPSEEK_API_KEY not found in environment and no api_key provided"
+        )
+
+    endpoint = os.getenv("DEEPSEEK_API_URL")
+    if not endpoint:
+        raise RuntimeError("DEEPSEEK_API_URL not found in environment")
+
+    # Allow specifying model via env var; default to Deepseek chat model
+    model_name = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+
+    system_prompt = (
+        "You are an expert Cypher query generator for a Fantasy Premier League knowledge graph. "
+        "Given the following schema, generate a single Cypher query that answers the user's prompt. "
+        "Return only the Cypher query, no explanation, no markdown, no extra text."
+        f"\n\nSchema:\n{SCHEMA}"
+    )
+
+    user_prompt = f"User prompt: {query}\nGenerate the Cypher query to answer it."
+
+    payload = {
+        "model": model_name,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "temperature": 0.5,
+        "max_tokens": 512,
+    }
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        resp = requests.post(endpoint, headers=headers, json=payload, timeout=timeout)
+        resp.raise_for_status()
+    except requests.exceptions.RequestException as exc:
+        raise RuntimeError(f"Deepseek request failed: {exc}") from exc
+
+    try:
+        data = resp.json()
+    except ValueError:
+        data = {"raw_text": resp.text}
+
+    # Try to extract text from common chat API response shapes
+    content = ""
+    if isinstance(data, dict):
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except Exception:
+            pass
+        if not content:
+            msg = data.get("message")
+            if isinstance(msg, dict):
+                content = msg.get("content", "") or msg.get("text", "")
+            elif isinstance(msg, str):
+                content = msg
+        if not content:
+            content = data.get("result") or data.get("response") or ""
+    if not content:
+        content = resp.text or ""
+
+    # Remove markdown code block if present
+    content = content.strip()
+    if content.startswith("```"):
+        lines = content.splitlines()
+        # Remove first and last line if they are code block markers
+        if (
+            lines[0].startswith("```")
+            and lines[-1].startswith("```")
+            and len(lines) > 2
+        ):
+            content = "\n".join(lines[1:-1]).strip()
+    return content

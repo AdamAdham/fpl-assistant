@@ -1,0 +1,65 @@
+{
+    "llm": [
+        {
+            "llm": "DeepSeek",
+            "cost": 9.741666666666666e-05,
+            "accurate": 0.6888888888888889,
+            "output_tokens": 40.083333333333336,
+            "response_time_sec": 1.9873443365097045
+        },
+        {
+            "llm": "Gemma",
+            "cost": 0.0002491833333333333,
+            "accurate": 0.6888888888888889,
+            "output_tokens": 40.025555555555556,
+            "response_time_sec": 2.0763962573475307
+        },
+        {
+            "llm": "Llama",
+            "cost": 0.0002713777777777778,
+            "accurate": 0.6888888888888889,
+            "output_tokens": 40.05444444444444,
+            "response_time_sec": 2.261469068792131
+        }
+    ],
+    "retrieval_mode": [
+        {
+            "retrieval_mode": "Baseline (Cypher)",
+            "accurate": 1.0,
+            "retrieval_time_sec": 0.05243325498369005,
+            "input_tokens": 220.48000000000002
+        },
+        {
+            "retrieval_mode": "Embeddings (Vector)",
+            "accurate": 0.4666666666666667,
+            "retrieval_time_sec": 0.1423465675777859,
+            "input_tokens": 784.745
+        },
+        {
+            "retrieval_mode": "Hybrid",
+            "accurate": 0.9833333333333333,
+            "retrieval_time_sec": 0.17349337604310777,
+            "input_tokens": 885.0183333333334
+        },
+        {
+            "retrieval_mode": "LLM-generated Cypher",
+            "accurate": 0.23333333333333334,
+            "retrieval_time_sec": 2.7651256985134548e-05,
+            "input_tokens": 135.80666666666667
+        }
+    ],
+    "embedding_model": [
+        {
+            "embedding_model": "all-MiniLM-L6-v2",
+            "accurate": 0.7166666666666667,
+            "input_tokens": 835.0766666666667,
+            "retrieval_time_sec": 0.1183148529794481
+        },
+        {
+            "embedding_model": "all-mpnet-base-v2",
+            "accurate": 0.7333333333333333,
+            "input_tokens": 834.6866666666667,
+            "retrieval_time_sec": 0.19752509064144558
+        }
+    ]
+}
