@@ -5,6 +5,8 @@ from . import (
     preprocessing,
     cypher_retriever,
     vector_retriever,
+    graph_visualizer,
+    graph_builder,
 )
 
 __all__ = [
@@ -12,4 +14,6 @@ __all__ = [
     "preprocessing",
     "cypher_retriever",
     "vector_retriever",
+    "graph_visualizer",
+    "graph_builder",
 ]

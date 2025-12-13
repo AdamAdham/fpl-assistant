@@ -18,6 +18,7 @@ It returns JSON-friendly results for use by the LLM.
 from typing import Dict, Any
 from modules.db_manager import Neo4jGraph
 from config.template_library import CYPHER_TEMPLATE_LIBRARY, required_params_map
+from modules.graph_builder import build_graph
 
 # Neo4j connection singleton
 db = Neo4jGraph()
@@ -62,6 +63,7 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
 
     Returns:
         dict: Results + metadata (safe for LLM)
+        Graph-shaped data (nodes + relationships)
     """
 
     # Pick the template for this intent
@@ -111,6 +113,8 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
             "cypher_query": cypher,
             "parameters": params,
             "results": [],
+            "nodes": [],
+            "relationships": [],
             "error": f"Missing required parameters for template: {missing}",
         }
 
@@ -123,10 +127,17 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
 
     raw_results = db.execute_query(cypher, params)
 
+
+    # graph builder 
+    
+    graph_nodes, rels = build_graph(intent, params, raw_results)
+
     return {
         "intent": intent,
         "template_used": intent,
         "cypher_query": cypher,
         "parameters": params,
         "results": raw_results,
+        "nodes": graph_nodes,
+        "relationships": rels,
     }

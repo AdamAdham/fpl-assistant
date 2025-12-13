@@ -32,6 +32,7 @@ from modules.llm_engine import (
 
 # Import Neo4jGraph for direct Cypher execution
 from modules.db_manager import neo4j_graph
+from modules.graph_visualizer import visualize_subgraph
 from config.styles import STYLE
 
 
@@ -364,6 +365,44 @@ if show_debug:
                 "Implement `modules/preprocessing.py`, `modules/cypher_retriever.py`, and"
                 "`modules/vector_retriever.py` to enable full functionality."
             )
+
+
+# Graph visualization when debug is ON
+if show_debug and "retrieved_context" in locals():
+    st.subheader("Graph Visualization")
+
+    # Baseline mode 
+    if isinstance(retrieved_context, list):
+        for i, ctx in enumerate(retrieved_context):
+            st.markdown(f"### Graph {i+1}: `{ctx.get('intent', '')}`")
+
+            nodes = ctx.get("nodes", [])
+            rels = ctx.get("relationships", [])
+
+            if nodes or rels:
+                visualize_subgraph({
+                    "nodes": nodes,
+                    "relationships": rels
+                })
+            else:
+                st.info("No graph for this intent.")
+
+    # Hybrid mode
+    elif isinstance(retrieved_context, dict) and "cypher" in retrieved_context:
+        for i, ctx in enumerate(retrieved_context["cypher"]):
+            st.markdown(f"### Graph {i+1}: `{ctx.get('intent', '')}`")
+
+            nodes = ctx.get("nodes", [])
+            rels = ctx.get("relationships", [])
+
+            if nodes or rels:
+                visualize_subgraph({
+                    "nodes": nodes,
+                    "relationships": rels
+                })
+            else:
+                st.info("No graph for this intent.")
+
 
 # Under-the-hood expander showing raw context returned
 with st.expander("Raw retrieval context"):
