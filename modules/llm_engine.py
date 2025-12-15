@@ -33,6 +33,13 @@ def deepseek_generate_answer(user_query: str, context_data: Dict[str, Any]) -> s
     system prompt and returns the model's text answer.
 
     - Reads `DEEPSEEK_API_KEY` and `DEEPSEEK_API_URL` from environment.
+
+    Parameters:
+    -----------
+    user_query: str
+        The user's question to be answered.
+    context_data: Dict[str, Any]
+        The context data to provide to the model.
     """
     if user_query is None:
         raise ValueError("user_query must be provided")
@@ -110,9 +117,58 @@ def deepseek_generate_answer(user_query: str, context_data: Dict[str, Any]) -> s
 
 HF_ENDPOINT = "https://router.huggingface.co/v1/chat/completions"
 
+def gemma_generate_answer(user_query: str, context_data: Dict[str, Any]) -> str:
+    """
+    Generate answer using Gemma via HuggingFace Router Chat API.
+    
+    Parameters:
+    -----------
+    user_query: str
+        The user's question to be answered.
+    context_data: Dict[str, Any]
+        The context data to provide to the model.
+    """
+    if user_query is None:
+        raise ValueError("user_query must be provided")
+
+    try:
+        context_json = json.dumps(context_data, ensure_ascii=False, indent=2)
+    except Exception:
+        context_json = str(context_data)
+
+    user_prompt = (
+        f'User query: "{user_query}"\n\n'
+        f"Context:\n{context_json}\n\n"
+        "Answer using ONLY this context. If context lacks the answer, say so."
+    )
+
+    return _hf_chat_completion(
+        model="google/gemma-2-2b-it",
+        system_prompt=BASE_SYSTEM_PROMPT.strip(),
+        user_prompt=user_prompt,
+    )
+
 
 def _hf_chat_completion(model: str, system_prompt: str, user_prompt: str) -> str:
-    """Internal helper for HuggingFace Chat Completions API."""
+    """
+    Internal helper for HuggingFace Chat Completions API.
+    Calls the HuggingFace Router Chat API with the given model, user prompt,
+    and system prompt, and returns the model's text answer.
+
+    Parameters:
+    -----------
+    model: str
+        The HuggingFace model to use.
+    system_prompt: str
+        The system prompt to provide to the model.
+    user_prompt: str
+        The user prompt to provide to the model.
+    
+    Returns:
+    --------
+    str
+        The model's text answer.
+    """
 
     api_key = os.getenv("HF_TOKEN")
     if not api_key:
@@ -146,31 +202,23 @@ def _hf_chat_completion(model: str, system_prompt: str, user_prompt: str) -> str
         return str(data)
 
 
-def gemma_generate_answer(user_query: str, context_data: Dict[str, Any]) -> str:
-    """Generate answer using Gemma via HuggingFace Router Chat API."""
-    if user_query is None:
-        raise ValueError("user_query must be provided")
-
-    try:
-        context_json = json.dumps(context_data, ensure_ascii=False, indent=2)
-    except Exception:
-        context_json = str(context_data)
-
-    user_prompt = (
-        f'User query: "{user_query}"\n\n'
-        f"Context:\n{context_json}\n\n"
-        "Answer using ONLY this context. If context lacks the answer, say so."
-    )
-
-    return _hf_chat_completion(
-        model="google/gemma-2-2b-it",
-        system_prompt=BASE_SYSTEM_PROMPT.strip(),
-        user_prompt=user_prompt,
-    )
-
 
 def llama_generate_answer(user_query: str, context_data: Dict[str, Any]) -> str:
-    """Generate answer using Llama via HuggingFace Router Chat API."""
+    """
+    Generate answer using Llama via HuggingFace Router Chat API.
+    
+    Parameters:
+    -----------
+    user_query: str
+        The user's question to be answered.
+    context_data: Dict[str, Any]
+        The context data to provide to the model.
+    
+    Returns:
+    --------
+    str
+        The model's text answer.
+    """
     if user_query is None:
         raise ValueError("user_query must be provided")
 
