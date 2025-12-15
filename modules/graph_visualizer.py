@@ -99,6 +99,7 @@ def neo4j_to_visjs_graph(
         "embedding_fastrp",
         "embedding",
         "embeddings",
+        "id",
     }
 
     # Process nodes

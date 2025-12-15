@@ -134,6 +134,7 @@ def create_query_with_deepseek(
             content = "\n".join(lines[1:-1]).strip()
     return content
 
+
 def classify_with_deepseek(
     query: str, options: List[str], api_key: Optional[str] = None, timeout: int = 10
 ) -> list:
@@ -186,7 +187,7 @@ def classify_with_deepseek(
             {"role": "user", "content": user_prompt},
         ],
         "temperature": 0.0,
-        "max_tokens": 32,
+        "max_tokens": 40,
     }
 
     headers = {

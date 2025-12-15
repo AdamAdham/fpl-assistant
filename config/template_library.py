@@ -18,7 +18,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     "PLAYER_STATS_GW_SEASON": """
       MATCH (p:Player {player_name: $player1})
          -[r:PLAYED_IN]->
-         (f:Fixture)<-[:HAS_FIXTURE]-(gw:Gameweek {GW_number: $gw})
+         (f:Fixture)<-[gw_rel:HAS_FIXTURE]-(gw:Gameweek {GW_number: $gw})
       WHERE gw.season = $season
       RETURN p.player_name AS player,
          gw.season AS season,
@@ -103,7 +103,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     # What are the specific stat sum for a player in a specific season? tested
     "PLAYER_SPECIFIC_STAT_SUM_SPECIFIC_SEASON": """
       MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-      MATCH (gw:Gameweek)-[:HAS_FIXTURE]->(f)
+      MATCH (gw:Gameweek)-[gw_rel:HAS_FIXTURE]->(f)
       WHERE gw.season = $season
       RETURN p.player_name AS player,
          sum(r.$stat_property) AS sum_$stat_property,
@@ -112,7 +112,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     # What are the specific stat avg for a player in a specific season? tested
     "PLAYER_SPECIFIC_STAT_AVG_SPECIFIC_SEASON": """
       MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-      MATCH (gw:Gameweek)-[:HAS_FIXTURE]->(f)
+      MATCH (gw:Gameweek)-[gw_rel:HAS_FIXTURE]->(f)
       WHERE gw.season = $season
       RETURN p.player_name AS player,
          avg(r.$stat_property) AS avg_$stat_property,
@@ -131,7 +131,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     # -----------------------------------------------------
     # Who are the top players in a given position in total_points? tested
     "TOP_PLAYERS_BY_POSITION_IN_POINTS": """
-       MATCH (p:Player)-[:PLAYS_AS]->(pos:Position {name: $position})
+       MATCH (p:Player)-[pos_rel:PLAYS_AS]->(pos:Position {name: $position})
        MATCH (p)-[r:PLAYED_IN]->(:Fixture)
        WITH p, sum(r.total_points) AS total_pts
        RETURN p.player_name AS player, total_pts
@@ -140,7 +140,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     """,
     # Who are the top players in a given position by form? tested
     "TOP_PLAYERS_BY_POSITION_IN_FORM": """
-       MATCH (p:Player)-[:PLAYS_AS]->(pos:Position {name: $position})
+       MATCH (p:Player)-[pos_rel:PLAYS_AS]->(pos:Position {name: $position})
        MATCH (p)-[r:PLAYED_IN]->(:Fixture)
        WITH p, avg(r.form) AS avg_form
        RETURN p.player_name AS player, avg_form
@@ -157,7 +157,7 @@ CYPHER_TEMPLATE_LIBRARY = {
        """,
     # Which players have the most stat in a specific position? tested
     "TOP_SUM_OF_SPECIFIC_STAT_LEADERS_SPECIFIC_POSITION": """
-       MATCH (p:Player)-[:PLAYS_AS]->(pos:Position {name: $position})
+       MATCH (p:Player)-[pos_rel:PLAYS_AS]->(pos:Position {name: $position})
        MATCH (p)-[r:PLAYED_IN]->(:Fixture)
        WITH p, sum(r.$stat_property) AS stat_total
        RETURN p.player_name AS player, stat_total
@@ -174,7 +174,7 @@ CYPHER_TEMPLATE_LIBRARY = {
        """,
     # Which players have the best average of stat in a specific position? tested
     "TOP_AVG_OF_SPECIFIC_STAT_LEADERS_SPECIFIC_POSITION": """
-       MATCH (p:Player)-[:PLAYS_AS]->(pos:Position {name: $position})
+       MATCH (p:Player)-[pos_rel:PLAYS_AS]->(pos:Position {name: $position})
        MATCH (p)-[r:PLAYED_IN]->(:Fixture)
        WITH p, avg(r.$stat_property) AS stat_avg
        RETURN p.player_name AS player, stat_avg
@@ -224,7 +224,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     # What is the points per minute ratio for a specific player in a specific season? tested
     "PLAYER_POINTS_PER_MINUTE_SPECIFIC_SEASON": """
          MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-         MATCH (gw:Gameweek)-[:HAS_FIXTURE]->(f)
+         MATCH (gw:Gameweek)-[gw_rel:HAS_FIXTURE]->(f)
          WHERE gw.season = $season
          WITH sum(r.minutes) AS total_minutes, sum(r.total_points) AS total_points
          WHERE total_points > 0 AND total_minutes > 0
@@ -247,7 +247,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     # What is the total number of goal contributions for a specific player in a specific season? tested
     "PLAYER_GOAL_CONTRIBUTIONS_SPECIFIC_SEASON": """
          MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-         MATCH (gw:Gameweek)-[:HAS_FIXTURE]->(f)
+         MATCH (gw:Gameweek)-[gw_rel:HAS_FIXTURE]->(f)
          WHERE gw.season = $season
          WITH sum(r.goals_scored) AS goals, sum(r.assists) AS assists
          RETURN goals, assists, (goals + assists) AS goal_contributions
@@ -255,7 +255,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     # What is the total number of cards for a specific player in a specific season? tested
     "PLAYER_TOTAL_CARDS_SPECIFIC_SEASON": """
          MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-         MATCH (gw:Gameweek)-[:HAS_FIXTURE]->(f)
+         MATCH (gw:Gameweek)-[gw_rel:HAS_FIXTURE]->(f)
          WHERE gw.season = $season
          WITH sum(r.yellow_cards) AS yellow_cards, sum(r.red_cards) AS red_cards
          RETURN yellow_cards, red_cards, (yellow_cards * 1 + red_cards * 3) AS disciplinary_score
@@ -265,13 +265,13 @@ CYPHER_TEMPLATE_LIBRARY = {
     # -----------------------------------------------------
     # How many points has a player scored against a specific team? tested
     "PLAYER_POINTS_VS_SPECIFIC_TEAM": """
-       MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-       MATCH (t:Team {name: $team1})
-       WHERE (f)-[:HAS_HOME_TEAM]->(t) OR (f)-[:HAS_AWAY_TEAM]->(t)
-       RETURN p.player_name AS player,
-              t.name AS opponent,
-              sum(r.total_points) AS total_points_vs_opponent,
-              count(f) AS matches_played
+         MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
+         MATCH (t:Team {name: $team1})
+         MATCH (f)-[team_rel:HAS_HOME_TEAM|HAS_AWAY_TEAM]->(t)
+         RETURN p.player_name AS player,
+               t.name AS opponent,
+               sum(r.total_points) AS total_points_vs_opponent,
+               count(f) AS matches_played
        """,
     # -----------------------------------------------------
     # PLAYER VALUE & RECENT PERFORMANCE
@@ -279,7 +279,7 @@ CYPHER_TEMPLATE_LIBRARY = {
     # What are the last N fixtures and points for a player? tested
     "PLAYER_LAST_N_FIXTURES_PERFORMANCE": """
        MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-       OPTIONAL MATCH (gw:Gameweek)-[:HAS_FIXTURE]->(f)
+       OPTIONAL MATCH (gw:Gameweek)-[gw_rel:HAS_FIXTURE]->(f)
        RETURN f.kickoff_time AS date, gw.GW_number AS gw, r.total_points
        ORDER BY date DESC
        LIMIT $limit
@@ -295,22 +295,21 @@ CYPHER_TEMPLATE_LIBRARY = {
     # How many fixtures in a specific season has a player appeared in? tested
     "PLAYER_FIXTURE_COUNT_SPECIFIC_SEASON": """
        MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-       MATCH (gw:Gameweek)-[:HAS_FIXTURE]->(f)
+       MATCH (gw:Gameweek)-[gw_rel:HAS_FIXTURE]->(f)
        WHERE gw.season = $season AND r.minutes > 0
        RETURN count(r) AS appearances_in_season
        """,
     # How many fixtures in total has a player appeared? tested
     "PLAYER_FIXTURE_COUNT_TOTAL": """
        MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-       MATCH (gw:Gameweek)-[:HAS_FIXTURE]->(f)
+       MATCH (gw:Gameweek)-[gw_rel:HAS_FIXTURE]->(f)
          WHERE r.minutes > 0
        RETURN count(r) AS appearances_in_season
        """,
     # Against which teams has a player scored the most points? tested
     "PLAYER_BEST_PERFORMANCE_AGAINST_WHICH_OPPONENTS": """
       MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-      MATCH (t:Team)
-      WHERE (f)-[:HAS_HOME_TEAM]->(t) OR (f)-[:HAS_AWAY_TEAM]->(t)
+      MATCH (f)-[team_rel:HAS_HOME_TEAM|HAS_AWAY_TEAM]->(t:Team)
       WITH t, sum(r.total_points) AS points
       ORDER BY points DESC
       SKIP 1        // skip the highest (player's own team)
@@ -320,15 +319,14 @@ CYPHER_TEMPLATE_LIBRARY = {
     # Against which teams has a player scored the fewest points? tested
     "PLAYER_WORST_PERFORMANCE_AGAINST_WHICH_OPPONENTS": """
        MATCH (p:Player {player_name: $player1})-[r:PLAYED_IN]->(f:Fixture)
-       MATCH (t:Team)
-       WHERE (f)-[:HAS_HOME_TEAM]->(t) OR (f)-[:HAS_AWAY_TEAM]->(t)
+       MATCH (f)-[team_rel:HAS_HOME_TEAM|HAS_AWAY_TEAM]->(t:Team)
        RETURN t.name AS opponent, sum(r.total_points) AS points
        ORDER BY points ASC
        LIMIT $limit
        """,
     # Which position has the best average points? tested
     "POSITION_BEST_AVG_POINTS": """
-       MATCH (pos:Position)<-[:PLAYS_AS]-(p:Player)
+       MATCH (pos:Position)<-[pos_rel:PLAYS_AS]-(p:Player)
        MATCH (p)-[r:PLAYED_IN]->(:Fixture)
        WHERE r.minutes>0
        WITH pos, avg(r.total_points) AS avg_points
@@ -337,7 +335,7 @@ CYPHER_TEMPLATE_LIBRARY = {
        """,
     # How many players are there in each position? tested
     "POSITION_PLAYERS_COUNT": """
-       MATCH (pos:Position)<-[:PLAYS_AS]-(p:Player)
+       MATCH (pos:Position)<-[pos_rel:PLAYS_AS]-(p:Player)
        RETURN pos.name AS position, count(p) AS players
        """,
     # Who are the least consistent players (highest stdev)? tested

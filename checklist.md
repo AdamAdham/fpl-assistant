@@ -76,7 +76,7 @@
   - Measure metrics for your 3 models: Accuracy, Response Time, Token Usage, Cost.
 - [ ] **Qualitative Evaluation**
   - Manually review answers for relevance, naturalness, and hallucination reduction.
-  - Create specific test cases (e.g., "Who is the best budget defender?") and document how each model handles it.
+  - Create specific test cases (e.g., "Who is the best scoring defender?") and document how each model handles it.
 - [ ] **Error Analysis**
   - Document where the system fails (e.g., can't handle complex multi-gameweek queries).
 - [ ] **Slides & Repo**

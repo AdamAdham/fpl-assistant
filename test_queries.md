@@ -51,23 +51,19 @@
 
     - "Who are the top 5 forwards by form?"
 
-13. **TOP_PLAYERS_UNDER_BUDGET_SPECIFIC_POSITION_SPECIFIC_SEASON**
-
-    - "Show me the best defenders under 6.0 in the 2022-23 season (limit 5)"
-
-14. **TOP_SUM_OF_SPECIFIC_STAT_LEADERS**
+13. **TOP_SUM_OF_SPECIFIC_STAT_LEADERS**
 
     - "Who are the top 5 assist leaders?"
 
-15. **TOP_SUM_OF_SPECIFIC_STAT_LEADERS_SPECIFIC_POSITION**
+14. **TOP_SUM_OF_SPECIFIC_STAT_LEADERS_SPECIFIC_POSITION**
 
     - "Who are the top 5 goalkeepers by clean sheets?"
 
-16. **TOP_AVG_OF_SPECIFIC_STAT_LEADERS**
+15. **TOP_AVG_OF_SPECIFIC_STAT_LEADERS**
 
     - "Who has the best average bonus points? Show top 5"
 
-17. **TOP_AVG_OF_SPECIFIC_STAT_LEADERS_SPECIFIC_POSITION**
+16. **TOP_AVG_OF_SPECIFIC_STAT_LEADERS_SPECIFIC_POSITION**
     - "Which 5 strikers have the best average goals scored?"
 
 ## COMPOUND & DERIVED STATS (9 queries)
@@ -216,7 +212,6 @@
 
 - Replace player/team names with actual names from your database
 - For queries with `$limit`, the number in the prompt (5, 10) will be used
-- For queries with `$budget`, use a realistic FPL price (e.g., 6.0, 10.5)
 - For `$stat_property`, use valid properties from your schema (goals_scored, assists, clean_sheets, bonus, etc.)
 - Seasons should be in format "2021-22" or "2022-23"
 - Gameweeks should be numbers 1-38

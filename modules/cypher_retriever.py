@@ -40,9 +40,9 @@ def safe_get(entity_dict, key, index=0):
 
 def render_cypher_template(template: str, params: dict) -> str:
     # Only replace keys that must be injected (not safe as Cypher params)
-    # e.g., stat_property, limit, budget
+    # e.g., stat_property, limit
     # These cannot be parameterized in Cypher and must be string-replaced
-    for key in ["stat_property", "limit", "budget"]:
+    for key in ["stat_property", "limit"]:
         if key in params and f"${key}" in template:
             template = template.replace(f"${key}", str(params[key]))
     return template
@@ -81,8 +81,6 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
     stat_property = safe_get(entities, "statistics", 0)
     season = safe_get(entities, "seasons", 0)
 
-    budget = entities.get("budget")[0] if entities.get("budget") else 6.0
-
     # Convert entities → parameters Neo4j expects
     params = {
         "limit": limit,
@@ -93,7 +91,6 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
         "position": position,
         "gw": gw,
         "season": season,
-        "budget": budget,
         "stat_property": stat_property,
     }
 
@@ -120,11 +117,10 @@ def retrieve_data_via_cypher(intent: str, entities: Dict[str, Any], limit: int =
         }
 
     cypher = render_cypher_template(CYPHER_TEMPLATE_LIBRARY[intent], params)
-    # Remove stat_property/limit/budget from params before passing to Neo4j
+    # Remove stat_property/limit from params before passing to Neo4j
     # These are injected into the template and should not be passed as parameters
     params.pop("stat_property", None)
     params.pop("limit", None)
-    params.pop("budget", None)
 
     # Execute query with graph extraction
     try:

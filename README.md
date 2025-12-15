@@ -31,10 +31,11 @@
 4. **Generates answers** — passes retrieved context to a language model (DeepSeek, Llama, or Gemma) to synthesize natural, conversational responses
 
 The system supports queries like:
-- *"Who should I captain for gameweek 10?"*
-- *"Compare Haaland and Son's assists per game"*
-- *"What are the top forwards under £6.5M?"*
-- *"Who are the most creative midfielders in the 2022-23 season?"*
+
+- _"Who should I captain for gameweek 10?"_
+- _"Compare Haaland and Son's assists per game"_
+- _"What are the top forwards under £6.5M?"_
+- _"Who are the most creative midfielders in the 2022-23 season?"_
 
 ### Why This Approach?
 
@@ -44,16 +45,16 @@ Traditional LLMs on FPL data are prone to hallucination (making up stats). RAG s
 
 ## ✨ Key Features
 
-| Feature | Description |
-|---------|-------------|
-| **Multi-Model LLM Support** | DeepSeek (default), Llama, or Gemma for answer generation |
-| **Dual Embedding Models** | All-MiniLM-L6-v2 (fast, small) and All-MPNet-Base-V2 (high-quality) |
-| **Four Retrieval Strategies** | Baseline Cypher, Embeddings (Vector), Hybrid, and LLM-generated Cypher |
-| **Fuzzy Entity Matching** | Robust player/team name recognition despite typos and abbreviations |
-| **Comprehensive FPL Schema** | Covers players, teams, positions, gameweeks, seasons, and detailed performance stats |
-| **Interactive Web UI** | Streamlit-based interface with debug mode and real-time configuration |
-| **Evaluation Framework** | 30 test prompts × 18 permutations = 540 experiments to benchmark retrieval + LLM performance |
-| **Two Seasons of Data** | 2021-22 and 2022-23 FPL data with player performance across all gameweeks |
+| Feature                       | Description                                                                                  |
+| ----------------------------- | -------------------------------------------------------------------------------------------- |
+| **Multi-Model LLM Support**   | DeepSeek (default), Llama, or Gemma for answer generation                                    |
+| **Dual Embedding Models**     | All-MiniLM-L6-v2 (fast, small) and All-MPNet-Base-V2 (high-quality)                          |
+| **Four Retrieval Strategies** | Baseline Cypher, Embeddings (Vector), Hybrid, and LLM-generated Cypher                       |
+| **Fuzzy Entity Matching**     | Robust player/team name recognition despite typos and abbreviations                          |
+| **Comprehensive FPL Schema**  | Covers players, teams, positions, gameweeks, seasons, and detailed performance stats         |
+| **Interactive Web UI**        | Streamlit-based interface with debug mode and real-time configuration                        |
+| **Evaluation Framework**      | 30 test prompts × 18 permutations = 540 experiments to benchmark retrieval + LLM performance |
+| **Two Seasons of Data**       | 2021-22 and 2022-23 FPL data with player performance across all gameweeks                    |
 
 ---
 
@@ -159,6 +160,7 @@ python .\scripts\create_kg.py
 ```
 
 This populates Neo4j with:
+
 - **Seasons**: 2021-22, 2022-23
 - **Players**: ~600 per season
 - **Teams**: 20 Premier League teams
@@ -172,6 +174,7 @@ This populates Neo4j with:
 Download FAISS indexes and mappings from: [Google Drive Link](https://drive.google.com/drive/folders/1nyeVFgM-nb4q6_rRVhxmG5-gnQSjjBjp?usp=sharing)
 
 Place files in `embeddings_out/`:
+
 ```
 embeddings_out/
 ├── faiss_index_modelA.index
@@ -187,6 +190,7 @@ python .\scripts\generate_embeddings.py
 ```
 
 This script:
+
 1. Fetches all player performance records from Neo4j
 2. Generates text descriptions (e.g., "Haaland (FWD): 13 goals, 5 assists, 195 points")
 3. Encodes them using both embedding models
@@ -264,15 +268,18 @@ fpl-assistant/
 Converts raw user text into structured data.
 
 **Key Functions:**
+
 - `extract_entities(query: str) → dict` — Extracts players, teams, positions, gameweeks, seasons, stats
 
 **Features:**
+
 - **Spacy NER** for organization recognition (team names)
 - **Fuzzy matching** to handle typos and partial names
 - **Regex patterns** for gameweeks (e.g., "GW10"), positions, seasons
 - **Database lookups** for robustness
 
 **Example:**
+
 ```python
 query = "How many goals did Haaland score in GW5 2022-23?"
 entities = extract_entities(query)
@@ -290,9 +297,11 @@ entities = extract_entities(query)
 Executes templated Cypher queries against Neo4j.
 
 **Key Functions:**
+
 - `retrieve_data_via_cypher(intent, entities, limit) → dict` — Executes a Cypher template selected by intent
 
 **Template Examples:**
+
 - `PLAYER_STATS_GW_SEASON` — Get a player's stats in a specific gameweek
 - `COMPARE_PLAYERS_BY_TOTAL_POINTS` — Compare two players' total points
 - `PLAYER_CAREER_STATS_TOTALS` — Career aggregates
@@ -300,6 +309,7 @@ Executes templated Cypher queries against Neo4j.
 - `TEAM_FIXTURE_SCHEDULE` — Get team's upcoming/past fixtures
 
 **Features:**
+
 - Parameter injection safety (parameterized + template rendering)
 - Missing parameter detection with fallbacks
 - JSON-friendly output
@@ -309,16 +319,19 @@ Executes templated Cypher queries against Neo4j.
 Finds players/fixtures using semantic similarity via embeddings.
 
 **Key Functions:**
+
 - `vector_search(entities, top_k, model_choice) → dict` — Performs FAISS similarity search
 - `get_models_and_indexes()` → Cached loading of models + FAISS indexes
 
 **Process:**
+
 1. Build query text from entities (e.g., "Players: Haaland | Positions: FWD")
 2. Encode query using SentenceTransformer
 3. Query FAISS index for top-k similar embeddings
 4. Fetch source nodes from Neo4j
 
 **Embedding Models:**
+
 - **Model A**: `all-MiniLM-L6-v2` (22M params, fast)
 - **Model B**: `all-mpnet-base-v2` (109M params, high-quality)
 
@@ -336,16 +349,19 @@ results = db.execute_query("MATCH (p:Player) RETURN p LIMIT 5")
 Interfaces with multiple LLM providers.
 
 **Supported Models:**
+
 - **DeepSeek** (default, most cost-effective)
 - **Llama** via Hugging Face Inference API
 - **Gemma** via Hugging Face Inference API
 
 **Functions:**
+
 - `deepseek_generate_answer(query, context) → str`
 - `llama_generate_answer(query, context) → str`
 - `gemma_generate_answer(query, context) → str`
 
 **System Prompt:**
+
 ```
 You are an elite Fantasy Premier League analyst.
 Answer the user's question using ONLY the data provided.
@@ -359,6 +375,7 @@ Suggest a follow-up question at the end.
 High-level LLM utilities for understanding user intent.
 
 **Functions:**
+
 - `classify_with_deepseek(query, options) → list` — Map query to up to 3 Cypher templates
 - Fallback: `local_intent_classify(query)` (rule-based, in `config/template_library.py`)
 
@@ -368,15 +385,15 @@ High-level LLM utilities for understanding user intent.
 
 ### Node Types
 
-| Node | Properties | Purpose |
-|------|-----------|---------|
-| **Season** | `season_name` | Group data by season (2021-22, 2022-23) |
-| **Gameweek** | `season`, `GW_number` | 38 gameweeks per season |
-| **Fixture** | `season`, `fixture_number`, `kickoff_time` | Individual matches |
-| **Team** | `name` | 20 Premier League clubs |
-| **Player** | `player_name`, `player_element` | Individual players |
-| **Position** | `name` | FWD, MID, DEF, GK |
-| **Embedding** | `model`, `text`, `source_label` | Vector embeddings of player descriptions |
+| Node          | Properties                                 | Purpose                                  |
+| ------------- | ------------------------------------------ | ---------------------------------------- |
+| **Season**    | `season_name`                              | Group data by season (2021-22, 2022-23)  |
+| **Gameweek**  | `season`, `GW_number`                      | 38 gameweeks per season                  |
+| **Fixture**   | `season`, `fixture_number`, `kickoff_time` | Individual matches                       |
+| **Team**      | `name`                                     | 20 Premier League clubs                  |
+| **Player**    | `player_name`, `player_element`            | Individual players                       |
+| **Position**  | `name`                                     | FWD, MID, DEF, GK                        |
+| **Embedding** | `model`, `text`, `source_label`            | Vector embeddings of player descriptions |
 
 ### Relationships
 
@@ -415,6 +432,7 @@ The system supports **four retrieval strategies**, configurable from the UI side
 **When to use:** High-precision factual queries (stats, comparisons)
 
 **Process:**
+
 1. Classify intent (e.g., "PLAYER_STATS_GW_SEASON")
 2. Map entities to template parameters
 3. Execute Cypher query
@@ -428,6 +446,7 @@ The system supports **four retrieval strategies**, configurable from the UI side
 **When to use:** Exploratory queries, fuzzy matching (e.g., "players similar to Salah")
 
 **Process:**
+
 1. Encode query + entities as a text vector
 2. Query FAISS index for top-k similar embeddings
 3. Fetch corresponding nodes from Neo4j
@@ -441,6 +460,7 @@ The system supports **four retrieval strategies**, configurable from the UI side
 **When to use:** Balance precision + recall
 
 **Process:**
+
 1. Run Cypher retrieval
 2. Run embedding search in parallel
 3. Combine results, deduplicate, rank by relevance
@@ -453,6 +473,7 @@ The system supports **four retrieval strategies**, configurable from the UI side
 **When to use:** Complex, unconventional questions
 
 **Process:**
+
 1. Prompt DeepSeek to generate Cypher queries
 2. Execute against Neo4j
 3. Return results
@@ -466,11 +487,11 @@ The system supports **four retrieval strategies**, configurable from the UI side
 
 ### Supported Models
 
-| Model | Provider | Speed | Quality | Cost |
-|-------|----------|-------|---------|------|
-| **DeepSeek** | Deepseek API | ⚡ Fast | ⭐⭐⭐⭐ | 💰 Cheap |
-| **Llama 2 70B** | Hugging Face | 🐢 Slow | ⭐⭐⭐⭐⭐ | 💰💰 |
-| **Gemma 7B** | Hugging Face | ⚡ Fast | ⭐⭐⭐ | 💰 Cheap |
+| Model           | Provider     | Speed   | Quality    | Cost     |
+| --------------- | ------------ | ------- | ---------- | -------- |
+| **DeepSeek**    | Deepseek API | ⚡ Fast | ⭐⭐⭐⭐   | 💰 Cheap |
+| **Llama 2 70B** | Hugging Face | 🐢 Slow | ⭐⭐⭐⭐⭐ | 💰💰     |
+| **Gemma 7B**    | Hugging Face | ⚡ Fast | ⭐⭐⭐     | 💰 Cheap |
 
 ### Configuration
 
@@ -510,6 +531,7 @@ answer = deepseek_generate_answer(
 ### Evaluation Framework
 
 The project includes a comprehensive **evaluation suite** with:
+
 - **30 test prompts** across different query types
 - **18 permutations** per prompt (different retrieval modes × LLM models × embedding models)
 - **540 total experiments** to benchmark performance
@@ -521,6 +543,7 @@ python -m experiments.run_experiments
 ```
 
 **Outputs:**
+
 - `experiments/results.json` — Detailed results for each trial
 - `experiments/plots/` — Generated visualizations
 - Summary metrics: latency, token usage, cost analysis
@@ -529,9 +552,9 @@ python -m experiments.run_experiments
 
 1. **Player Performance** — Stats, comparisons, rankings
 2. **Team Analysis** — Fixture difficulty, form
-3. **Transfer Advice** — Budget constraints, captaincy
+3. **Transfer Advice** — Form
 4. **Comparisons** — Head-to-head player metrics
-5. **Recommendations** — Top performers by position, budget
+5. **Recommendations** — Top performers by position
 
 ---
 
@@ -555,13 +578,13 @@ python -m experiments.run_experiments
 
 ### Color Palette (Official PL Colors)
 
-| Color | RGB | Use |
-|-------|-----|-----|
-| Cyan | `rgb(4, 245, 255)` | Highlights, accents |
-| Pink | `rgb(233, 0, 82)` | Warnings, important |
-| Green | `rgb(0, 255, 133)` | Success, positive |
-| Purple | `rgb(56, 0, 60)` | Background, muted |
-| White | `rgb(255, 255, 255)` | Text, primary |
+| Color  | RGB                  | Use                 |
+| ------ | -------------------- | ------------------- |
+| Cyan   | `rgb(4, 245, 255)`   | Highlights, accents |
+| Pink   | `rgb(233, 0, 82)`    | Warnings, important |
+| Green  | `rgb(0, 255, 133)`   | Success, positive   |
+| Purple | `rgb(56, 0, 60)`     | Background, muted   |
+| White  | `rgb(255, 255, 255)` | Text, primary       |
 
 ---
 
@@ -572,6 +595,7 @@ python -m experiments.run_experiments
 **Cause:** Neo4j database not running or incorrect credentials
 
 **Solution:**
+
 ```powershell
 # 1. Start Neo4j Desktop
 # 2. Verify .env has correct credentials
@@ -584,6 +608,7 @@ python -c "from modules.db_manager import neo4j_graph; print('OK')"
 **Cause:** `embeddings_out/` directory is empty
 
 **Solution:**
+
 ```powershell
 # Option 1: Download from Drive (fast)
 # Place files in embeddings_out/
@@ -597,6 +622,7 @@ python scripts/generate_embeddings.py
 **Cause:** Transformer model not downloaded
 
 **Solution:**
+
 ```powershell
 python -m spacy download en_core_web_trf
 # Fallback (smaller model):
@@ -608,6 +634,7 @@ python -m spacy download en_core_web_sm
 **Cause:** Expired or incorrect API key in `.env`
 
 **Solution:**
+
 1. Check `DEEPSEEK_API_KEY` in `.env`
 2. Verify key is active on provider's dashboard
 3. Test with `curl` if possible
@@ -617,6 +644,7 @@ python -m spacy download en_core_web_sm
 **Cause:** Insufficient RAM for both models + FAISS indexes
 
 **Solution:**
+
 - Use only one embedding model (set `MODEL_A_NAME` only)
 - Or reduce `top_k` parameter
 - Consider GPU acceleration with `pip install torch-cuda`
@@ -626,6 +654,7 @@ python -m spacy download en_core_web_sm
 **Cause:** FAISS index not optimized or using CPU
 
 **Solution:**
+
 ```python
 # In vector_retriever.py, use GPU-backed FAISS
 # index = faiss.index_gpu_to_cpu(gpu_index)  # Convert after GPU search
@@ -666,6 +695,7 @@ This project is for educational purposes as part of ACL coursework.
 ## 📞 Support
 
 For issues, check:
+
 1. `STARTING.md` — Quick setup guide
 2. `schema.md` — Data structure documentation
 3. `checklist.md` — Development phases

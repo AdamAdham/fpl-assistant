@@ -47,7 +47,6 @@ def extract_entities(user_query: str) -> Dict[str, List[str]]:
         "positions": [],
         "seasons": [],
         "statistics": [],
-        "budget": [],
     }
 
     query_lower = user_query.lower()
@@ -249,18 +248,6 @@ def extract_entities(user_query: str) -> Dict[str, List[str]]:
                     if stat not in entities["statistics"]:
                         entities["statistics"].append(stat)
                         break
-
-    # ------------------
-    # Budget (Player Value)
-    # ------------------
-    # Matches: X.X
-    budget_matches = re.findall(r"\b\d{1,2}\.\d\b", query_lower)
-
-    if budget_matches:
-        entities["budget"] = [float(val) for val in budget_matches]
-    else:
-        # Default budget if user did not specify
-        entities["budget"] = [6.0]
 
     return entities
 
