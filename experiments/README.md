@@ -458,7 +458,7 @@ print(df.nsmallest(5, "cost_per_accuracy")[["llm", "retrieval_mode", "cost", "ac
 ## ⚠️ Notes
 
 - **Large file:** `results.json` is ~7,500 lines; best analyzed with pandas/dataframe tools
-- **Long runtime:** Full 540 trials can take 2-6 hours depending on API latency
+- **Long runtime:** Full 540 trials can take 10-30 minutes depending on API & Retrieval latency
 - **API costs:** Actual costs accumulate; use `cost_modify.py` to track total spending
 - **Accuracy assumes ground truth:** `validate_tests.json` must be manually curated for new queries
 - **Plots are overwritten:** Running `viz.py` regenerates all PNG files (old ones deleted)

@@ -219,7 +219,7 @@ Archive of outdated templates. Kept for reference or reverting if schema changes
 
 ---
 
-### ****init**.py** — Module Exports
+### \***\*init**.py\*\* — Module Exports
 
 Exposes the most commonly used configuration objects to simplify imports:
 
@@ -240,20 +240,20 @@ from config import MODEL_OPTIONS, EMBEDDING_MODEL_OPTIONS, VECTOR_TOP_K
 ```
 User Query
     ↓
-┌─────────────────────────────────────────────┐
-│ preprocessing.py (in modules/)              │
-│ ├─ Extract entities (players, teams, stats) │
+┌───────────────────────────────────────────────────┐
+│ preprocessing.py (in modules/)                    │
+│ ├─ Extract entities (players, teams, stats)       │
 │ ├─ Team name normalization (team_name_variants.py)│
-│ ├─ Stat name normalization (stat_variants.py)    │
-│ └─ Intent classification (template_library.py)   │
-└─────────────────────────────────────────────┘
+│ ├─ Stat name normalization (stat_variants.py)     │
+│ └─ Intent classification (template_library.py)    │
+└───────────────────────────────────────────────────┘
     ↓
-┌─────────────────────────────────────────────┐
-│ cypher_retriever.py (in modules/)           │
+┌────────────────────────────────────────────────┐
+│ cypher_retriever.py (in modules/)              │
 │ ├─ Select template from CYPHER_TEMPLATE_LIBRARY│
-│ ├─ Validate required parameters             │
-│ └─ Execute against Neo4j                    │
-└─────────────────────────────────────────────┘
+│ ├─ Validate required parameters                │
+│ └─ Execute against Neo4j                       │
+└────────────────────────────────────────────────┘
     ↓
 Database Results → LLM → Natural Language Answer
 ```

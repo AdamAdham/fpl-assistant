@@ -23,11 +23,11 @@ User Query (from Streamlit UI)
 │    └─ Hybrid combination                 │
 └──────────────────────────────────────────┘
     ↓
-┌──────────────────────────────────────────┐
-│ 3. llm_engine.py / llm_helper.py         │
-│    ├─ Generate Answer (DeepSeek/Llama)  │
-│    └─ Answer Grounding & Validation      │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────────────────┐
+│ 3. llm_engine.py / llm_helper.py               │
+│    ├─ Generate Answer (DeepSeek/Llama/Gemma)   │
+│    └─ Answer Grounding & Validation            │
+└────────────────────────────────────────────────┘
     ↓
 Natural Language Answer + Follow-up Question
 ```
@@ -492,7 +492,7 @@ Enhanced DeepSeek call with full metrics.
 
 ---
 
-### ****init**.py** — Module Exports
+### \***\*init**.py\*\* — Module Exports
 
 Exposes core modules for easy import:
 

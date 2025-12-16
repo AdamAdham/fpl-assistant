@@ -261,15 +261,15 @@ Neo4j Knowledge Graph
                 ↓
    ┌────────────────────────────────────┐
    │ SentenceTransformer encode         │
-   │ ├─ Model A: 384-dim vectors       │
-   │ └─ Model B: 768-dim vectors       │
-   └────────────┬─────────────────────┘
+   │ ├─ Model A: 384-dim vectors        │
+   │ └─ Model B: 768-dim vectors        │
+   └────────────┬───────────────────────┘
                 ↓
-   ┌──────────────────────────┐
-   │ FAISS Index (fast search)│
-   ├─ faiss_index_modelA.index│
-   └─ faiss_index_modelB.index│
-   └──────────────────────────┘
+   ┌────────────────────────────┐
+   │ FAISS Index (fast search)  │
+   ├─ faiss_index_modelA.index  │
+   ├─ faiss_index_modelB.index  │
+   └────────────────────────────┘
 ```
 
 **Usage:**
