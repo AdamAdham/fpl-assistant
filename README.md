@@ -1,23 +1,6 @@
-# 🏆 FPL Graph-RAG Assistant
+# ⚽ FPL Graph-RAG Assistant
 
 > **A Retrieval-Augmented Generation (RAG) system for intelligent Fantasy Premier League analysis using Neo4j knowledge graphs, semantic embeddings, and large language models.**
-
----
-
-## 📖 Table of Contents
-
-1. [Overview](#overview)
-2. [Key Features](#key-features)
-3. [System Architecture](#system-architecture)
-4. [Quick Start](#quick-start)
-5. [Project Structure](#project-structure)
-6. [Module Documentation](#module-documentation)
-7. [Knowledge Graph Schema](#knowledge-graph-schema)
-8. [Retrieval Methods](#retrieval-methods)
-9. [LLM Integration](#llm-integration)
-10. [Experiments & Evaluation](#experiments--evaluation)
-11. [Troubleshooting](#troubleshooting)
-12. [Team & Contributing](#team--contributing)
 
 ---
 

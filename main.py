@@ -33,10 +33,12 @@ from modules.llm_engine import (
 # Import Neo4jGraph for direct Cypher execution
 from modules.db_manager import neo4j_graph
 from modules.graph_visualizer import generate_html_visualization
-from config.styles import STYLE
+from styles.styles import STYLE
 
 
-st.set_page_config(page_title="FPL Assistant", layout="wide", page_icon="logo2.png")
+st.set_page_config(
+    page_title="FPL Assistant", layout="wide", page_icon="styles/logo2.png"
+)
 
 st.markdown(
     STYLE,
@@ -45,12 +47,12 @@ st.markdown(
 
 st.title("FPL Graph-RAG Assistant")
 st.markdown(
-    "Ask questions about Fantasy Premier League (player stats, fixture lookups, comparisons, transfer recs)."
+    "Ask questions about Fantasy Premier League (player stats, toughest opponents, comparisons)."
 )
 
 # Sidebar controls
 with st.sidebar:
-    st.image("logo.png", use_column_width=True)
+    st.image("styles/logo.png", use_column_width=True)
     st.header("Configuration")
 
     llm_key_choice = st.selectbox("Choose LLM", list(MODEL_OPTIONS.keys()), index=0)
@@ -97,7 +99,9 @@ if "last_retrieval_mode" not in st.session_state:
     st.session_state.last_retrieval_mode = None
 
 # Input box
-user_input = st.chat_input("Ask about FPL — e.g. 'Who should I captain for GW10?'")
+user_input = st.chat_input(
+    "Ask about FPL — e.g. 'How many points did Salah score against Wolves?'"
+)
 
 # START OF IMPORTS CHECK
 

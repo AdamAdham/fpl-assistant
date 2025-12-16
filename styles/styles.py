@@ -1,4 +1,4 @@
-# config/styles.py
+# styles/styles.py
 
 STYLE = """
     <style>
