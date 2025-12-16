@@ -149,6 +149,87 @@ if modules_missing:
 
 # END OF IMPORTS CHECk
 
+# Merging graph nodes and edges from cypher and vector retrievers
+
+import json
+
+
+def parse_title(node):
+    try:
+        return json.loads(node.get("title", "{}"))
+    except Exception:
+        return {}
+
+
+def c_node_merge_key(node):
+    meta = parse_title(node)
+
+    if "Player" in meta.get("labels", []):
+        # use Neo4j node id as canonical
+        print("cypher node meta:", meta)
+        return f"Player::{meta['player_element']}"
+    return None
+
+
+def v_node_merge_key(node):
+    meta = parse_title(node)
+
+    if "player_element" in meta:
+        print("vector node meta:", meta)
+        return f"Player::{meta['player_element']}"
+    return None
+
+
+def merge_graph_nodes(cypher_nodes, vector_nodes):
+    merged = {}
+    id_map = {}
+
+    # 1️⃣ Add Cypher nodes first (authoritative)
+    for node in cypher_nodes:
+        key = c_node_merge_key(node)
+        print(key)
+        node_id = node["id"]
+
+        if key:
+            merged[key] = node.copy()
+            id_map[node_id] = node_id
+        else:
+            merged[node_id] = node.copy()
+            id_map[node_id] = node_id
+
+    # 2️⃣ Merge Vector nodes
+    for node in vector_nodes:
+        key = v_node_merge_key(node)
+        print(key)
+        node_id = node["id"]
+
+        if key and key in merged:
+            canonical = merged[key]
+
+            # Merge all missing fields
+            for k, v in node.items():
+                if k not in canonical:
+                    canonical[k] = v
+
+            id_map[node_id] = canonical["id"]
+        else:
+            merged[node_id] = node.copy()
+            id_map[node_id] = node_id
+
+    return list(merged.values()), id_map
+
+
+def remap_edges(edges, id_map):
+    remapped = []
+
+    for edge in edges:
+        e = edge.copy()
+        e["from"] = id_map.get(edge["from"], edge["from"])
+        e["to"] = id_map.get(edge["to"], edge["to"])
+        remapped.append(e)
+
+    return remapped
+
 
 def placeholder_retrieve(intent, entities, mode, k=5):
     """Return a placeholder context when modules aren't implemented yet."""
@@ -271,6 +352,9 @@ if user_input:
 
         elif retrieval_mode == "Hybrid":
             cypher_contexts = []
+            all_cypher_nodes = []
+            all_cypher_edges = []
+
             for intent in intents:
                 try:
                     c_res = cypher_retriever.retrieve_data_via_cypher(
@@ -280,17 +364,11 @@ if user_input:
                         f"\n\n####### Cypher retrieval result for {intent}: #######\n\n"
                     )
                     print(c_res)
-                    # Capture graph visualization from hybrid cypher component
-                    if (
-                        not graph_html_content
-                        and c_res.get("graph_nodes")
-                        and c_res.get("graph_edges")
-                    ):
-                        graph_html_content = generate_html_visualization(
-                            c_res.get("graph_nodes", []),
-                            c_res.get("graph_edges", []),
-                            height=600,
-                        )
+                    # Collect graph data from all cypher intents
+                    if c_res.get("graph_nodes"):
+                        all_cypher_nodes.extend(c_res.get("graph_nodes", []))
+                    if c_res.get("graph_edges"):
+                        all_cypher_edges.extend(c_res.get("graph_edges", []))
                 except Exception as e:
                     c_res = {"intent": intent, "error": str(e)}
                     print(
@@ -298,27 +376,41 @@ if user_input:
                     )
                     print(c_res)
                 cypher_contexts.append(c_res)
+
             # Filter out cypher entries with an 'error' field
             filtered_cypher_contexts = [
                 res for res in cypher_contexts if not res.get("error")
             ]
+
+            merged_nodes = all_cypher_nodes
+            merged_edges = all_cypher_edges
+
             try:
                 v_res = vector_retriever.vector_search(
                     entities, top_k=k, model_choice=embedding_model_choice
                 )
-                # Capture graph visualization from vector if cypher didn't provide one
-                if (
-                    not graph_html_content
-                    and v_res.get("graph_nodes")
-                    and v_res.get("graph_edges")
-                ):
-                    graph_html_content = generate_html_visualization(
-                        v_res.get("graph_nodes", []),
-                        v_res.get("graph_edges", []),
-                        height=600,
-                    )
+                # Merge vector graph data with cypher graph data
+                all_vector_nodes = v_res.get("graph_nodes", [])
+                all_vector_edges = v_res.get("graph_edges", [])
+
+                print(all_cypher_nodes[0])
+                print(all_vector_nodes[7])
+
+                merged_nodes, id_map = merge_graph_nodes(
+                    all_cypher_nodes, all_vector_nodes
+                )
+
+                merged_edges = remap_edges(all_cypher_edges + all_vector_edges, id_map)
+
             except Exception as e:
                 v_res = {"error": str(e)}
+
+            if merged_nodes or merged_edges:
+                graph_html_content = generate_html_visualization(
+                    merged_nodes,
+                    merged_edges,
+                    height=600,
+                )
 
             retrieved_context = {"cypher": filtered_cypher_contexts, "vector": v_res}
             st.session_state.last_graph_html = graph_html_content
