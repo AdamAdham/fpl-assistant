@@ -555,10 +555,3 @@ This project was developed as part of **Advanced Computer Lab Milestone 3 course
 - [ ] Implement streaming responses for long answers
 - [ ] Add user feedback loop for fine-tuning (PPO)
 
----
-
-## 📄 License
-
-This project is for educational purposes as part of ACL coursework.
-
----
